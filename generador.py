@@ -61,6 +61,16 @@ def main():
 
     args = parser.parse_args()
 
+# --- VALIDACIÓN DE SEGURIDAD Y HUMOR ---
+    if args.long == 0:
+        print("\n\033[1;31m[!] Error de capa 8: Amigo, una contraseña de 0 caracteres no protege ni un archivo.txt vacío. 😂\033[0m")
+        sys.exit(1)
+    
+    if args.long < 12:
+        print(f"\n\033[1;33m[!] Aviso: {args.long} caracteres es muy poco para los estándares de ElCaucano.")
+        print("[*] Ajustando automáticamente al mínimo de seguridad: 12 caracteres.\033[0m")
+        args.long = 12
+
     # Ejecución
     password = generar_password(args.long, args.mayusculas, args.numeros, args.simbolos)
     
