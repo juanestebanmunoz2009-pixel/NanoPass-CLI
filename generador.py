@@ -3,6 +3,50 @@ import secrets
 import string
 import sys
 import os
+import re
+
+# --- LÓGICA DE EVALUACIÓN ---
+def evaluar_seguridad(password):
+    puntuacion = 0
+    
+    # 1. Longitud
+    longitud = len(password)
+    if longitud >= 16: puntuacion += 4
+    elif longitud >= 12: puntuacion += 3
+    elif longitud >= 8: puntuacion += 1
+
+    # 2. Variedad (Usando Regex)
+    pool = 0
+    if re.search(r"[a-z]", password): 
+        puntuacion += 1.5
+        pool += 26
+    if re.search(r"[A-Z]", password): 
+        puntuacion += 1.5
+        pool += 26
+    if re.search(r"\d", password):    
+        puntuacion += 1.5
+        pool += 10
+    if re.search(r"[!@#$%^&*(),.?\":{}|<>+=\-_/]", password): 
+        puntuacion += 1.5
+        pool += 32
+
+    puntuacion = min(10, int(puntuacion))
+
+    # 3. Tiempo de Fuerza Bruta (Estimación)
+    # Combinaciones = pool ^ longitud
+    if pool > 0:
+        combinaciones = pool ** longitud
+        segundos = combinaciones / 1e11 # 100 mil millones de intentos/seg
+        
+        if segundos < 1: tiempo = "Instantáneo"
+        elif segundos < 3600: tiempo = f"{int(segundos/60)} minutos"
+        elif segundos < 86400: tiempo = f"{int(segundos/3600)} horas"
+        elif segundos < 31536000: tiempo = f"{int(segundos/86400)} días"
+        else: tiempo = f"{int(segundos/31536000):,} años"
+    else:
+        tiempo = "Desconocido"
+
+    return puntuacion, tiempo
 
 # --- LÓGICA DE GENERACIÓN ---
 def generar_password(longitud, usar_mayus, usar_nums, usar_simbolos):
@@ -17,16 +61,12 @@ def generar_password(longitud, usar_mayus, usar_nums, usar_simbolos):
 def validar_nombre_archivo(nombre):
     nombre_sucio = os.path.basename(nombre)
     nombre_base, ext = os.path.splitext(nombre_sucio)
-    
     ext_seguras = ['.txt', '.log']
     if ext.lower() not in ext_seguras:
-        print(f"\033[1;33m[!] Regulación: La extensión '{ext}' no es permitida. Cambiando a .txt\033[0m")
         ext = ".txt"
-    
     prohibidos = '<>:"/\\|?*'
     for char in prohibidos:
         nombre_base = nombre_base.replace(char, "")
-
     if not nombre_base: nombre_base = "password"
     return nombre_base + ext
 
@@ -39,45 +79,47 @@ def exportar_a_archivo(nombre_usuario, password):
     except Exception as e:
         print(f"\033[1;31m[-] Error al escribir: {e}\033[0m", file=sys.stderr)
 
-# --- INTERFAZ ESTILO SHERLOCK ---
+# --- INTERFAZ ---
 def main():
-    # El ArgumentParser ahora tiene un epílogo con ejemplos, como Sherlock
     parser = argparse.ArgumentParser(
-        description="🛡️  Generador de contraseñas By ElCaucano hecho con amor.",
-        epilog="Ejemplo: python3 generador.py -l 16 -m -n -s -e claves.txt",
+        description="🛡️  NanoPass-CLI: Generador seguro de contraseñas.",
+        epilog="Ejemplo: python3 generador.py -l 16 -m -n -s",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
-    # GRUPO 1: Configuración de la clave
     config = parser.add_argument_group('CONFIGURACIÓN')
-    config.add_argument("-l", "--long", type=int, default=12, metavar="LONG", help="Longitud de la contraseña (default: 12)")
-    config.add_argument("-m", "--mayusculas", action="store_true", help="Incluir letras mayúsculas")
+    config.add_argument("-l", "--long", type=int, default=12, metavar="LONG", help="Longitud (default: 12)")
+    config.add_argument("-m", "--mayusculas", action="store_true", help="Incluir mayúsculas")
     config.add_argument("-n", "--numeros", action="store_true", help="Incluir números")
-    config.add_argument("-s", "--simbolos", action="store_true", help="Incluir símbolos especiales")
+    config.add_argument("-s", "--simbolos", action="store_true", help="Incluir símbolos")
 
-    # GRUPO 2: Opciones de guardado
     salida = parser.add_argument_group('EXPORTAR RESULTADOS')
-    salida.add_argument("-e", "--exportar", type=str, metavar="ARCHIVO", help="Nombre del archivo donde se guardará")
+    salida.add_argument("-e", "--exportar", type=str, metavar="ARCHIVO", help="Guardar en archivo")
 
     args = parser.parse_args()
 
-# --- VALIDACIÓN DE SEGURIDAD Y HUMOR ---
+    # Validación de seguridad
     if args.long == 0:
-        print("\n\033[1;31m[!] Error de capa 8: Amigo, una contraseña de 0 caracteres no protege ni un archivo.txt vacío. 😂\033[0m")
+        print("\n\033[1;31m[!] Error de capa 8: Amigo, una contraseña de 0 caracteres no protege nada. 😂\033[0m")
         sys.exit(1)
     
     if args.long < 12:
-        print(f"\n\033[1;33m[!] Aviso: {args.long} caracteres es muy poco para los estándares de ElCaucano.")
-        print("[*] Ajustando automáticamente al mínimo de seguridad: 12 caracteres.\033[0m")
+        print(f"\n\033[1;33m[!] Aviso: {args.long} caracteres es muy poco para NanoPass-CLI.")
+        print("[*] Ajustando al mínimo de seguridad: 12 caracteres.\033[0m")
         args.long = 12
 
     # Ejecución
     password = generar_password(args.long, args.mayusculas, args.numeros, args.simbolos)
+    score, tiempo = evaluar_seguridad(password)
     
-    # Imprimimos el resultado con un formato visual más atractivo
-    print("\n" + "─" * 45)
-    print(f"🔑 TU CONTRASEÑA:  \033[1;92m{password}\033[0m") # Verde brillante
-    print("─" * 45 + "\n")
+    # Colores para el score
+    color_score = "\033[1;92m" if score >= 8 else "\033[1;93m" if score >= 5 else "\033[1;91m"
+
+    print("\n" + "─" * 50)
+    print(f"🔑 CONTRASEÑA:  \033[1;97m{password}\033[0m")
+    print(f"📊 SEGURIDAD:   {color_score}{score}/10\033[0m")
+    print(f"⏳ TIEMPO CRACK: {tiempo} (aprox.)")
+    print("─" * 50 + "\n")
 
     if args.exportar:
         exportar_a_archivo(args.exportar, password)
