@@ -3,16 +3,16 @@ Generador de contraseñas seguro hecho en python.
 
 **NanoPass-CLI** es una herramienta de línea de comandos potente y ligera escrita en Python, diseñada para generar contraseñas de alta seguridad y evaluar su resistencia contra ataques de fuerza bruta.
 
-## ✨ Características
+##  Características
 
-- 🚀 **Generación Instantánea:** Crea contraseñas seguras con un solo comando.
-- 📊 **Evaluador de Seguridad:** Calcula una puntuación del 1 al 10 basada en la entropía de la clave.
-- ⏳ **Estimador de Crackeo:** Muestra cuánto tiempo tardaría una GPU moderna en descifrar tu clave.
-- 🛡️ **Validación Inteligente:** No permite contraseñas menores a 12 caracteres (Estándar NanoPass).
-- 📂 **Exportación Segura:** Guarda tus contraseñas en archivos `.txt` o `.log` con limpieza automática de caracteres prohibidos.
-- 🎨 **Interfaz Colorida:** Salida visual clara y organizada en la terminal.
+-  **Generación Instantánea:** Crea contraseñas seguras con un solo comando.
+-  **Evaluador de Seguridad:** Calcula una puntuación del 1 al 10 basada en la entropía de la clave.
+-  **Estimador de Crackeo:** Muestra cuánto tiempo tardaría una GPU moderna en descifrar tu clave.
+-  **Validación Inteligente:** No permite contraseñas menores a 12 caracteres (Estándar NanoPass).
+-  **Exportación Segura:** Guarda tus contraseñas en archivos `.txt` o `.log` con limpieza automática de caracteres prohibidos.
+-  **Interfaz Colorida:** Salida visual clara y organizada en la terminal.
 
-## 🚀 Instalación
+##  Instalación
 
 Asegúrate de tener Python 3 instalado en tu sistema.
 
@@ -41,7 +41,7 @@ Asegúrate de tener Python 3 instalado en tu sistema.
 
      python3 generador.py -l 16 -m -n -s -e mis_claves.txt
 
-🧠¿Cómo funciona la seguridad?
+¿Cómo funciona la seguridad?
 
 NanoPass-CLI utiliza la fórmula de combinaciones exponenciales:
 Combinaciones = Pool de caracteres ^ Longitud
